@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<head>
+	<title>Todo App</title>
+</head>
+<body>
+	{% for todo in todos %}
+		{% for key, value in todo.items() %}
+		<p>{{ value }}</p>
+		{% endfor %}
+	{% endfor %}
+</body>
