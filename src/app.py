@@ -1,5 +1,7 @@
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request
+from time import localtime, strftime
 import sqlite3
+import uuid
 
 app = Flask(__name__)
 
@@ -19,18 +21,44 @@ def close_connection(exception):
 		db.close()
 
 todos = []
-with app.app_context():
-	todo = {}
-	cur = get_db().cursor()
-	cur.execute("SELECT (description) FROM todos;")
-	todo["description"] = cur.fetchall()[0][0]
-	cur.execute("SELECT (date) FROM todos;")
-	todo["date"] = cur.fetchall()[0][0]
-	cur.execute("SELECT (todo_id) FROM todos;")
-	todo["todo_id"] = cur.fetchall()[0][0]
+def load_todos():
+	with app.app_context():
+		todo = {}
+		cur = get_db().cursor()
+		cur.execute("SELECT * FROM todos;")
+		temp_todos = cur.fetchall()
 
-	todos.append(todo)
+		for x in xrange(len(temp_todos)):
+			todo = {}
 
-@app.route("/")
+			todo["todo_id"] = temp_todos[x][0]
+			todo["description"] = temp_todos[x][1]
+			todo["date"] = temp_todos[x][2]
+
+			todos.append(todo)
+
+load_todos()
+
+@app.route("/", methods=["GET", "POST"])
 def index():
+	if request.method == "POST":
+		if "add-button" in request.form and len(request.form["todo-description"]) > 0:
+			db = get_db()
+			cur = db.cursor()
+			todo_uuid = uuid.uuid4()
+			todo_description = request.form["todo-description"]
+			todo_date = strftime("%m/%d/%y", localtime())
+			# print(todo_uuid.hex, todo_description, todo_date)
+			with app.app_context():
+				cur.execute("INSERT OR IGNORE INTO todos (todo_id, description, date) VALUES (?, ?, ?) ", (todo_uuid.hex, todo_description, todo_date))
+				db.commit()
+				todos.append({"todo_id": todo_uuid.hex, "description": todo_description, "date": todo_date})
+			# load_todos()
+		if "delete-button" in request.form:
+			db = get_db()
+			cur = db.cursor()
+			# with app.app_context():
+				# cur.execute("DELETE FROM todos WHERE todo_id = ?", (request.form[]))
+			print(request.form)
+
 	return render_template("index.html", todos=todos)

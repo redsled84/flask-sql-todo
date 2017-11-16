@@ -1,11 +1,44 @@
 <!DOCTYPE html>
 <head>
-	<title>Todo App</title>
+	<title>To-do App</title>
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
 </head>
 <body>
-	{% for todo in todos %}
-		{% for key, value in todo.items() %}
-		<p>{{ value }}</p>
-		{% endfor %}
-	{% endfor %}
+	<div class="container">
+		<br>
+		<h1 style="text-align: center;">To-do App</h1>
+		<br>
+		<form method="post">
+			<div class="form-group update-form" style="text-align: center;">
+				<input type="text" name="todo-description" id="todo-description" placeholder="Enter a thing to do" style="width:40%">
+				<input type="submit" name="add-button" class="btn btn-primary" value="Add">
+			</div>
+		</form>
+		<br>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Description</th>
+					<th>Todo ID</th>
+					<th></th>
+				</tr>
+			</thead>
+			{% for todo in todos %}
+			<tbody>
+				<tr>
+					<td>{{ todo["date"] }}</td>
+					<td>{{ todo["description"] }}</td>
+					<td>{{ todo["todo_id"] }}</td>
+					<td>
+						<form method="post">
+							<input type="hidden" name="todo-id" value="{{ todo['todo_id'] }}">
+							<input type="submit" name="delete-button" class="btn btn-danger" value="X">
+						</form>
+					</td>
+				</tr>
+			</tbody>
+			{% endfor %}
+		</table>
+	</div>
 </body>
