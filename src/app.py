@@ -39,6 +39,12 @@ def load_todos():
 
 load_todos()
 
+def find(lst, key, value):
+    for i, dic in enumerate(lst):
+        if dic[key] == value:
+            return i
+    return -1
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 	if request.method == "POST":
@@ -50,15 +56,20 @@ def index():
 			todo_date = strftime("%m/%d/%y", localtime())
 			# print(todo_uuid.hex, todo_description, todo_date)
 			with app.app_context():
-				cur.execute("INSERT OR IGNORE INTO todos (todo_id, description, date) VALUES (?, ?, ?) ", (todo_uuid.hex, todo_description, todo_date))
+				cur.execute("INSERT OR IGNORE INTO todos (todo_id, description, date) VALUES (?, ?, ?) ", \
+					(todo_uuid.hex, todo_description, todo_date))
 				db.commit()
 				todos.append({"todo_id": todo_uuid.hex, "description": todo_description, "date": todo_date})
 			# load_todos()
 		if "delete-button" in request.form:
 			db = get_db()
 			cur = db.cursor()
-			# with app.app_context():
-				# cur.execute("DELETE FROM todos WHERE todo_id = ?", (request.form[]))
-			print(request.form)
+			with app.app_context():
+				cur.execute("DELETE FROM todos WHERE todo_id = ?;", (request.form["todo-id"],))
+				db.commit()
+				delete_index = find(todos, "todo_id", request.form["todo-id"])
+				if delete_index >= 0:
+					todos.remove(todos[delete_index])
+
 
 	return render_template("index.html", todos=todos)
